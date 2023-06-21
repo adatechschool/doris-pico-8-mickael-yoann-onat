@@ -81,7 +81,7 @@ end
 
 function create_player()
 	p={x=5,y=5,sprite=40,
-	power=0
+	power=0,ballspeed=2,portee=20
 	}
 
 	 
@@ -95,12 +95,26 @@ function draw_player()
 	spr(p.sprite,p.x*8,p.y*8)
 end
 
+sens = 0
+
 function player_movement()
 newx=p.x
 newy=p.y
 
-if (btn(➡️)) newx+=0.51
-if (btn(⬅️)) newx-=0.51
+if btn(➡️) then
+	newx+=0.51
+ if p.ballspeed<0 then
+  p.ballspeed=p.ballspeed*(-1)
+  p.portee=p.portee*(-1)
+ end
+end
+if btn(⬅️) then
+ newx-=0.51
+ if p.ballspeed>0 then
+  p.ballspeed=p.ballspeed*(-1)
+  p.portee=p.portee*(-1)
+ end
+end
 if (btn(⬇️)) newy+=0.51
 if (btn(⬆️)) newy-=0.51
 
@@ -130,11 +144,13 @@ end
 -->8
 --sorts
 
+
 function shoot()
 	local new_ball={
 		x=p.x*8,
 		y=p.y*8,
-		speed=2
+		speed=p.ballspeed,
+		portee=p.portee
 	}
 	add(sorts,new_ball)
 end
@@ -144,8 +160,9 @@ end
 function update_sorts()
 	for s in all(sorts) do
 		local position_init=p.x*8
-		s.x+=s.speed
-	 if (s.x>(position_init+20)) del (sorts,s)
+		s.x+=p.ballspeed
+	 if (s.portee>0 and s.x>(position_init+s.portee)) del (sorts,s)
+	 if (s.portee<0 and s.x<(position_init+s.portee)) del (sorts,s)
 	end
 end
 -->8
