@@ -1,9 +1,10 @@
 pico-8 cartridge // http://www.pico-8.com
 version 38
 __lua__
+
 function _init()
  create_player()
- create_chest()
+--  create_chest()
  sorts={}
  enemies={}
   
@@ -17,14 +18,10 @@ function _update()
 	if (btnp(❎)) shoot()
 	update_sorts()
  if #enemies==0 then
-	spawn_enemies(ceil(rnd(5)))
+	spawn_enemies(ceil(rnd(wave_size)))
 	end
 	update_enemies()
 
---pas d'ennemis pour test
-for e in all(enemies) do
-del(enemies,e)
-end
 
 end
 
@@ -36,16 +33,18 @@ function _draw()
 	cls()
 	draw_map()
 	draw_player()
-	draw_chest()
+	-- draw_chest()
 	
 	--enemies
 	for e in all (enemies) do
-	spr(44,e.x*8,e.y*8)
+	spr(44,e.x*8+e.eox,e.y*8+e.eoy)
 	end
 	
 	for s in all (sorts) do
-		spr(41,s.x,s.y)
+		spr(41,s.x*8,s.y*8)
 	end
+
+
 end
 
 -->8
@@ -65,8 +64,8 @@ end
 
 
 function update_camera()
-	local camx=mid(0,p.x-7.5,127-15)
-	local camy=mid(0,p.y-7.5,63-15)
+	local camx=mid(0,p.x-7.5+p.ox/8,127-15)
+	local camy=mid(0,p.y-7.5+p.oy/8,63-15)
 	camera(camx*8,camy*8)
 end
 
@@ -88,62 +87,93 @@ end
 --player
 
 function create_player()
-	p={x=5,y=5,sprite=40,
-	power=0,ballspeed=0.5,portee=20
+	p={x=5,y=5,
+	ox=0, oy=0,
+	start_ox=0,start_oy=0,
+	anim_t=0,
+	sprite=40,
+	power=0,ballspeed=0.5,portee=30,
+	life=2
 	}
-
-	 
-
 end
 
 
 
 
 function draw_player()
-	spr(p.sprite,p.x*8,p.y*8)
+	spr(p.sprite,p.x*8+p.ox,p.y*8+p.oy)
 end
 
 sens = 0
 
 function player_movement()
+
 newx=p.x
 newy=p.y
 
-if btnp(➡️) then
-	newx+=1
- if p.ballspeed<0 then
-  p.ballspeed=p.ballspeed*(-1)
-  p.portee=p.portee*(-1)
- end
-end
-if btnp(⬅️) then
- newx-=1
- if p.ballspeed>0 then
-  p.ballspeed=p.ballspeed*(-1)
-  p.portee=p.portee*(-1)
- end
-end
-if (btnp(⬇️)) newy+=1
-if (btnp(⬆️)) newy-=1
+if p.anim_t == 0 then
 
+	newox=0
+	newoy=0
 
-	
-// interact(newx,newy)
-	
-	if not check_flag(0,newx,newy) then
-		p.x=mid(0,newx,127)
-		p.y=mid(0,newy,63)
-	else
-		sfx=0
+	if btn(➡️) then
+		newx+=1
+		newox=-8
+		axe = "x"
+ 		if p.ballspeed<0 then
+  		p.ballspeed=p.ballspeed*(-1)
+  		p.portee=p.portee*(-1)
+ 		end
+	elseif btn(⬅️) then
+ 		newx-=1
+ 		newox=8
+ 		axe = "x"
+ 		if p.ballspeed>0 then
+  			p.ballspeed=p.ballspeed*(-1)
+  			p.portee=p.portee*(-1)
+ 		end
+	elseif btn(⬇️) then
+		newy+=1
+		newoy=-8
+		axe = "y"
+		if p.ballspeed<0 then
+  			p.ballspeed=p.ballspeed*(-1)
+  			p.portee=p.portee*(-1)
+ 		end
+	elseif btn(⬆️) then
+		newy-=1
+		newoy=8
+		axe = "y"
+		if p.ballspeed>0 then
+  			p.ballspeed=p.ballspeed*(-1)
+  			p.portee=p.portee*(-1)
+ 		end
 	end
 end
+-- interact(newx,newy)
+	
+	if (newx!=p.x or newy!=p.y) and not check_flag(0,newx,newy) then
+		p.x=mid(0,newx,127)
+		p.y=mid(0,newy,63)
+		p.start_ox=newox
+		p.start_oy=newoy
+		p.anim_t=1
+	end
+	
+--animation joueur
+p.anim_t=max(p.anim_t-0.2,0)
+p.ox=p.start_ox*p.anim_t
+p.oy=p.start_oy*p.anim_t
 
-//function interact(x,y)
-// if check_flag(2,x,y) then
-//pick_up_power(x,y)
+-- //function interact(x,y)
+-- // if check_flag(2,x,y) then
+-- //pick_up_power(x,y)
 
- //end
-//end
+--  //end
+-- //end
+
+
+end
 
 
 
@@ -155,10 +185,10 @@ end
 
 function shoot()
 	local new_ball={
-		x=p.x*8,
-		y=p.y*8,
-		speed=p.ballspeed,
-		portee=p.portee
+		x=p.x,
+		y=p.y,
+		speed=p.ballspeed/8,
+		portee=p.portee/8
 	}
 	add(sorts,new_ball)
 end
@@ -166,57 +196,131 @@ end
 --t={portee=20}
 
 function update_sorts()
-	for s in all(sorts) do
-		local position_init=p.x*8
-		s.x+=p.ballspeed
-	 if (s.portee>0 and s.x>(position_init+s.portee)) del (sorts,s)
-	 if (s.portee<0 and s.x<(position_init+s.portee)) del (sorts,s)
+	for i, s in ipairs(sorts) do
+		local position_init = p.x
+		
+		if axe == "x" then
+		s.x += s.speed
+		end
+		if axe == "y" then
+		s.y += s.speed
+		end
+		if (s.portee > 0 and s.x > (position_init + s.portee)) then
+			del(sorts, s)
+		elseif (s.portee < 0 and s.x < (position_init + s.portee)) then
+			del(sorts, s)
+		elseif (s.portee > 0 and s.y > (position_init + s.portee)) then
+			del(sorts, s)
+		elseif (s.portee < 0 and s.y < (position_init + s.portee)) then
+			del(sorts, s)
+		end
 	end
 end
 -->8
 --enemies
 
+wave_size = 15
+
 function spawn_enemies(amount)
-gap= (128-8*amount)/(amount+1)
+gap= (40-8*amount)/(amount+1)
 for i=1,amount do
- new_enemy={
-  x=gap*i+8*(i-1),
-  y=15,
-    
- life=4
- }
+	new_enemy={
+	x=gap*i+8*(i-1),
+	y=5,
+	anim_te=0,
+	start_eox=0,
+	start_eoy=0,   
+	life=1,
+	speed=0.1
+}
 add(enemies,new_enemy)
  end
 
 end
 
 function update_enemies()
+
+
+	if rnd(1)<0.5 then
+		change_way=true
+	else 
+		change_way=false
+	end
+
 	for e in all(enemies) do
-		//if e.y< 60 then
-		if p.x>e.x then
-			e.x+=1/16
-		elseif p.x<e.x then
- 		e.x-=1/16
+	enemy_newx = e.x
+	enemy_newy= e.y
+	enemy_newox = 0
+	enemy_newoy = 0
+		if e.anim_te == 0 then
+
+		
+			if p.x>e.x and not change_way then
+				
+				enemy_newx += 1
+				enemy_newox = -8
+			
+			elseif p.x<e.x and not change_way then
+				
+ 				enemy_newx -= 1
+				enemy_newox = 8
+				
+			end
+		
+		
+
+			if p.y>e.y and change_way then
+				
+				enemy_newy += 1
+				enemy_newoy = -8
+				
+			elseif p.y<e.y and change_way then
+ 				
+				enemy_newy -= 1
+				enemy_newoy = 8
+		
+			end
 		end
 
-		if p.y>e.y then
-			e.y+=1/16
-		elseif p.y<e.y then
- 		e.y-=1/16
+		if (enemy_newx!=e.x or enemy_newy!=e.y) and not check_flag(0,enemy_newx,enemy_newy) then
+			e.x=mid(0,enemy_newx,127)
+			e.y=mid(0,enemy_newy,63)
+			e.start_eox = enemy_newox
+			e.start_eoy = enemy_newoy
+			e.anim_te=1
+		
+		end	
+		--animation ennemis
+		e.anim_te=max(e.anim_te-e.speed,0)
+		e.eox=e.start_eox*e.anim_te
+		e.eoy=e.start_eoy*e.anim_te
+	
+	if ((e.x-p.x)<0.8) and ((e.y-p.y)<0.8) and ((e.x-p.x>-0.8)) and ((e.y-p.y)>-0.8) then
+		p.life -= 1
+		del(enemies,e)
+	end
+
+	
+
+		for s in all(sorts) do
+
+
+			if ((s.x-e.x)<0.8) and ((s.y-e.y)<0.8) and ((s.x-e.x>-0.8)) and ((s.y-e.y)>-0.8)then
+				e.life -=1
+				del(sorts,s)
+			end
+		
 		end
 		
-		for s in all(sorts) do
-			if collision(s,e) then
-				sfx(2)
-				del(sorts,s)
-				e.life-=1
-				if e.life==0 then
-					del(enemies,e)
-				end
-		 end
-		end
+
+
+	if e.life == 0 then
+		del(enemies,e)
+	end
+	
 	end
 end
+
 -->8
 --health
 
@@ -230,13 +334,13 @@ end
 -->8
 --collision
 
-function create_chest()
-	c={x=5,y=5,sprite=26,life=4}
-end
+-- function create_chest()
+-- 	c={x=5,y=5,sprite=26,life=4}
+-- end
 
-function draw_chest()
-	spr(c.sprite,c.x*8,c.y*8)
-end
+-- function draw_chest()
+-- 	spr(c.sprite,c.x*8,c.y*8)
+-- end
 
 function collision(s,c)
   return not (s.x > c.x + 8
@@ -374,7 +478,7 @@ eeeeeeeeeeeeeeee33dddc33455555543333633377777cc733199233338888330000000066366666
 10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010
 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __gff__
-0000010101010000000201010000010001010200010001020100000000010100010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000010101010000000201010000010001010200010001020100000000010100010100000000000080000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 0101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010f01010101010101010101000000020202020202020202020202020202020202050505050505050505161616161616161616161616161616161616161616161616161616161616161616
