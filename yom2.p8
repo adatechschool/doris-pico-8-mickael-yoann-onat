@@ -338,29 +338,32 @@ end
 wave_size = 30
 
 function spawn_enemies(amount)
-gap=(20-8*amount)/(amount+1)
-for i=1,amount do
-	new_enemy={
-	x=p.x+gap*i+8*(i-1),
-	y=p.y+gap*i+8*(i-1),
-	anim_te=0,
-	start_eox=0,
-	start_eoy=0,   
-	life=1,
-	speed=0.1
-}
-local spawn_spot = flr(rnd(4))+1
-if (spawn_spot == 1) new_enemy.x -= 30
-if (spawn_spot == 2) new_enemy.x += 30
-if (spawn_spot == 3) new_enemy.y -= 30
-if (spawn_spot == 4) new_enemy.y += 30
+	gap=(20-8*amount)/(amount+1)
+	for i=1,amount do
+		new_enemy={
+		x=p.x+gap*i+8*(i-1),
+		y=p.y+gap*i+8*(i-1),
+		blocked = 0,
+		anim_te=0,
+		start_eox=0,
+		start_eoy=0,   
+		life=1,
+		speed=0.1,
+		eox = 0,
+		eoy = 0
+		}
+		local spawn_spot = flr(rnd(4))+1
+			if (spawn_spot == 1) new_enemy.x -= 30 
+			if (spawn_spot == 2) new_enemy.x += 30
+			if (spawn_spot == 3) new_enemy.y -= 30
+			if (spawn_spot == 4) new_enemy.y += 30
 
-add(enemies,new_enemy)
- end
-
+		add(enemies,new_enemy)
+ 	end
 end
 
 function update_enemies()
+
 
 
 	if rnd(1)<0.5 then
@@ -370,15 +373,47 @@ function update_enemies()
 	end
 
 	for e in all(enemies) do
-	enemy_newx = e.x
-	enemy_newy= e.y
-	enemy_newox = 0
-	enemy_newoy = 0
+
+		if (e.blocked>50 and ((p.x-e.x < -100/8) or (p.x-e.x > 100/8) or (p.y-e.y < -100/8) or (p.y-e.y > 100/8))) then
+			e.anim_te = 0
+		
+			if p.x>e.x then
+				
+				e.x += 1
+				-- e.eox = e.x
+			
+			elseif p.x<e.x then
+				
+				e.x -= 1
+				-- e.eox = e.x
+				
+			end
+		
+
+			if p.y>e.y then
+				
+				e.y += 1
+				-- e.eoy = e.y
+				
+			elseif p.y<e.y then
+ 				
+				e.y -= 1
+				-- e.eoy = e.y
+		
+			end
+		end
+
+	
+		enemy_newx = e.x
+		enemy_newy= e.y
+		enemy_newox = 0
+		enemy_newoy = 0
+
 		if e.anim_te == 0 then
 
 		
 			if p.x>e.x and not change_way then
-				
+			
 				enemy_newx += 1
 				enemy_newox = -8
 			
@@ -404,32 +439,40 @@ function update_enemies()
 			end
 		end
 
+		if check_flag(0,enemy_newx,e.y) then
+			e.blocked += 1
+		end
+
+		if check_flag(0,e.x,enemy_newy) then
+			e.blocked += 1
+		end
+
 		if (enemy_newx!=e.x or enemy_newy!=e.y) and not check_flag(0,enemy_newx,enemy_newy) then
 			e.x=mid(0,enemy_newx,127)
 			e.y=mid(0,enemy_newy,63)
 			e.start_eox = enemy_newox
 			e.start_eoy = enemy_newoy
 			e.anim_te=1
+			e.blocked = 0
 		
 		end	
-		--animation ennemis
+
 		e.anim_te=max(e.anim_te-e.speed,0)
 		e.eox=e.start_eox*e.anim_te
 		e.eoy=e.start_eoy*e.anim_te
 	
-	if ((e.x-p.x)<0.8) and ((e.y-p.y)<0.8) and ((e.x-p.x>-0.8)) and ((e.y-p.y)>-0.8) then
-  p.hp -= 1
-  
-		del(enemies,e)
-	end
+		if ((e.x-p.x)<0.8) and ((e.y-p.y)<0.8) and ((e.x-p.x>-0.8)) and ((e.y-p.y)>-0.8) then
+			p.life -= 1
+			del(enemies,e)
+		end
 
-	
+		
 
 		for s in all(sorts) do
 
 
 			if ((s.x-e.x)<0.8) and ((s.y-e.y)<0.8) and ((s.x-e.x>-0.8)) and ((s.y-e.y)>-0.8)then
-				e.life-=p.power
+				e.life -=1
 				del(sorts,s)
 			end
 		
@@ -437,9 +480,9 @@ function update_enemies()
 		
 
 
-	if e.life == 0 then
-		del(enemies,e)
-	end
+		if e.life == 0 then
+			del(enemies,e)
+		end
 	
 	end
 end
