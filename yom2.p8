@@ -98,11 +98,11 @@ camera()
  
  function hud()
 --bar(p.hp/100,5,50,8,40,8,2)
-		if p.hp==3 then
+		if p.life==3 then
 			spr(65,p.x*8,p.y*8-7)
-		elseif p.hp==2 then
+		elseif p.life==2 then
 			spr(66,p.x*8,p.y*8-7)
-		elseif p.hp==1 then
+		elseif p.life==1 then
 			spr(67,p.x*8,p.y*8-7)
 --print(spr(43))
   
@@ -119,7 +119,7 @@ hud()
 function draw_game_state()
 
   cls()
-  print("hp: " .. state.hp, 0, 0, 7)
+  print("hp: " .. state.life, 0, 0, 7)
 end
 -->8
 --map
@@ -167,7 +167,7 @@ function create_player()
 	anim_t=0,
 	sprite=40,
 	power=1,ballspeed=2,portee=50,
-	hp=3,
+	life=3,
 	axe="x",
 	state="normal",
 	power_sprite=41
@@ -605,7 +605,7 @@ c_intro_text_3="je dois les battres a tout prix!!! \nle sort de la planete en de
 function init_game_state()
 
 state = {
-    hp = 100,
+    life = 100,
       }
 end
 
@@ -614,11 +614,11 @@ end
 function update_game_state()
 
  if ((e.x-p.x)<0.8) and ((e.y-p.y)<0.8) and ((e.x-p.x>-0.8)) and ((e.y-p.y)>-0.8) then
-    state.hp = state.hp - 1
+    state.life = state.life - 1
     
  end 
    if btn(5) then
-    state.hp = state.hp + 1
+    state.life = state.life + 1
   end
 end
 
