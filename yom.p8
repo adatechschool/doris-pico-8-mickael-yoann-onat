@@ -3,6 +3,8 @@ version 38
 __lua__
 
 function _init()
+hud_x=0
+hud_y=0
  create_player()
  sorts={}
  enemies={}
@@ -26,7 +28,7 @@ function game_update()
 	if not messages[1] then
 		player_movement()
 		count_time +=1
-end
+	end
  
 	update_camera()
 	if (btnp(❎)) shoot()
@@ -36,7 +38,7 @@ end
 		count_time=0
 	end
 	update_enemies()
-
+	whereIs_topLeft()
 
 end
 
@@ -51,7 +53,7 @@ function game_draw()
 	draw_msg()
 	hud()
 	draw_ui()
-	print("score:"..score,p.x*8+p.ox,p.y*8+p.oy,7)
+	print("score:"..score,hud_x,hud_y,7)
 	
 
 	--enemies
@@ -105,18 +107,35 @@ camera()
 	print(c_title_text,25,86,7)
  print("press x  pour start",30,105,7)
  c_title_text="l'invasion des monstres!"
- end
+end
  
+function whereIs_topLeft()
+if(p.x<=7) then
+	hud_x = 0
+else
+	hud_x = p.x*8+p.ox-7.5*8
+end
+if(p.y<=7) then
+	hud_y = 0
+else
+	hud_y = p.y*8+p.oy-7.5*8
+end
+end
  
  function hud()
---bar(p.hp/100,5,50,8,40,8,2)
-		if p.life==3 then
-			spr(65,p.x*8+p.ox,p.y*8-7+p.oy)
-		elseif p.life==2 then
-			spr(66,p.x*8+p.ox,p.y*8-7+p.oy)
-		elseif p.life==1 then
-			spr(67,p.x*8+p.ox,p.y*8-7+p.oy)
---print(spr(43))
+
+	if p.life==3 then
+		spr(65,hud_x+107,hud_y)
+	  	spr(65,hud_x+113,hud_y)
+	  	spr(65,hud_x+119,hud_y)
+  	elseif p.life==2 then
+		spr(65,hud_x+107,hud_y)
+		spr(65,hud_x+113,hud_y)
+		spr(67,hud_x+119,hud_y)
+   elseif p.life==1 then
+		spr(65,hud_x+107,hud_y)
+		spr(67,hud_x+113,hud_y)
+		spr(67,hud_x+119,hud_y)
   
  end
 end 
@@ -192,7 +211,6 @@ end
 
 function draw_player()
 	spr(p.sprite,p.x*8+p.ox,p.y*8+p.oy)
-	print(p.state)
 
 end
 
@@ -488,11 +506,42 @@ function update_enemies()
 		
 
 		for s in all(sorts) do
-
-
 			if ((s.x-e.x)<0.8) and ((s.y-e.y)<0.8) and ((s.x-e.x>-0.8)) and ((s.y-e.y)>-0.8)then
-				e.life -=1
-				del(sorts,s)
+				if p.state=="normal" then
+					e.life -=1
+				end
+				
+				if p.state=="fire" then	
+				 if e.state=="water" then
+				 	e.life -=0
+				 elseif e.state=="plant" then
+				 	e.life -=2
+				 else
+				 	e.life -=1
+					end
+				end
+				
+				if p.state=="water" then	
+				 if e.state=="plant" then
+				 	e.life -=0
+				 elseif e.state=="fire" then
+				 	e.life -=2
+				 else
+				 	e.life -=1
+					end
+				end
+				
+				if p.state=="plant" then	
+				 if e.state=="fire" then
+				 	e.life -=0
+				 elseif e.state=="water" then
+				 	e.life -=2
+				 else
+				 	e.life -=1
+					end
+				end
+				
+			del(sorts,s)
 			end
 		
 		end
