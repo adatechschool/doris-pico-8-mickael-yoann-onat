@@ -33,9 +33,10 @@ function game_update()
 	update_camera()
 	if (btnp(❎)) shoot()
 	update_sorts()
- 	if count_time==250 then -- 5 secondes environ
+ 	if count_time==500 then -- 5 secondes environ
 		spawn_enemies(ceil(rnd(wave_size)))
 		count_time=0
+		wave_size += 1
 	end
 	update_enemies()
 	whereIs_topLeft()
@@ -377,7 +378,7 @@ end
 -->8
 --enemies
 
-wave_size = 30
+wave_size = 5
 elements={"normal", "fire", "plant", "water"}
 
 function spawn_enemies(amount)
