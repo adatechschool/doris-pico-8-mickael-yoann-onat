@@ -21,6 +21,7 @@ hud_y=0
 end
 
 function game_update()
+	spawnStick()
  update_msg()
  	if not music_start then
   --music(0)
@@ -32,14 +33,7 @@ function game_update()
 	end
  
 	update_camera()
-	if btnp(:croix:) and p.state=="white" then
-	gandalf()
-	elseif (btnp(:croix:) and p.state=="normal")
-					or (btnp(:croix:) and p.state=="fire")
-					or (btnp(:croix:) and p.state=="water")
-					or (btnp(:croix:) and p.state=="plant")
-	then shoot()
-	end
+	if (btnp(❎)) shoot()
 	update_sorts()
  	if (count_time==500) or enemies.length == 0 then 
 		spawn_enemies(ceil(rnd(flr(wave_size))))
@@ -343,16 +337,32 @@ end
 -->8
 --sorts
 
--- function createStick()
--- 	x=flr(rnd(120))
--- 	y=flr(rnd(120-x))
--- 	if x<60 then
--- 		x=
--- end
+function createStick()
+	x_stick=flr(rnd(120))
+	y_stick=flr(rnd(120-x))
+	if x_stick<60 then
+		x_stick = 120 - x_stick * (-1)
+	else 
+	x_stick -=60
+	end
+		if y_stick<60 then
+		y_stick = 120 - y_stick * (-1)
+	else 
+	y_stick -= 60
+	end
+
+	if fget(x_stick,y_stick) == 0 then
+		mset(x_stick,y_stick,26)
+	else
+	createStick()
+	end
+
+end
 
 function spawnStick()
-	if flr(rnd(2))==1 then
-		x=flr(rnd(60))
+	if flr(rnd(1))==1 then
+		createStick()
+	end
 end
 
 function shoot()
