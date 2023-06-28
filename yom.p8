@@ -347,34 +347,38 @@ end
 --sorts
 
 function create_stick()
-	x_stick=flr(rnd(120))
-	y_stick=flr(rnd(120))
-	if x_stick<60 then
-		x_stick = 120 - x_stick * (-1)
-	else 
-	x_stick -=60
+	function random_location()
+		x_stick=flr(rnd(120))
+		y_stick=flr(rnd(120))
 	end
+	random_location()
+	print("oook")
+		if x_stick<60 then
+			x_stick = 120 - x_stick * (-1)
+		else 
+			x_stick -=60
+		end
 		if y_stick<60 then
-		y_stick = 120 - y_stick * (-1)
-	else 
-	y_stick -= 60
-	end
+			y_stick = 120 - y_stick * (-1)
+		else 
+			y_stick -= 60
+		end
 
-	if (mget(p.x+x_stick,p.x+y_stick) == 1) then
-		mset(p.x+x_stick,p.y+y_stick,026)
-	else
-	create_stick()
-	end
+		if (mget(p.x+x_stick,p.x+y_stick) == 1) then
+			mset(p.x+x_stick,p.y+y_stick,055)
+		else
+			random_location()
+		end
 
-	if fget(x_stick, y_stick) == 0 then
-		mset(x_stick, y_stick, 55)
+	if mget(x_stick, y_stick) == 01 then
+		mset(x_stick, y_stick,055)
 	else
 		create_stick()
 	end
 end
 
 function spawn_stick()
-	if flr(rnd(100))==1 then
+	if flr(rnd(1000))==1 then
 		create_stick()
 	end
 end
