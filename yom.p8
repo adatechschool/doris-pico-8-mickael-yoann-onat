@@ -8,7 +8,7 @@ hud_y=0
  create_player()
  sorts={}
  enemies={}
-	count_time = 200
+	count_time = 400
  _update= menu_update
  _draw= menu_draw
  init_msg()
@@ -17,6 +17,7 @@ hud_y=0
  music_start=false
  init_game_state()
  score=0
+ wave_count=10
 end
 
 function game_update()
@@ -33,10 +34,11 @@ function game_update()
 	update_camera()
 	if (btnp(❎)) shoot()
 	update_sorts()
- 	if count_time==500 then -- 5 secondes environ
-		spawn_enemies(ceil(rnd(wave_size)))
+ 	if (count_time==500) or enemies.length == 0 then 
+		spawn_enemies(ceil(rnd(flr(wave_size))))
 		count_time=0
-		wave_size += 1
+		wave_size += 1/(wave_count/10)
+		wave_count += 1
 	end
 	update_enemies()
 	whereIs_topLeft()
@@ -54,7 +56,7 @@ function game_draw()
 	draw_msg()
 	hud()
 	draw_ui()
-	print("score:"..score,hud_x,hud_y,7)
+ print("score:"..score,hud_x,hud_y,7)
 	
 
 	--enemies
@@ -399,10 +401,10 @@ function spawn_enemies(amount)
 		state=state_init
 		}
 		local spawn_spot = flr(rnd(4))+1
-			if (spawn_spot == 1) new_enemy.x -= 30 
-			if (spawn_spot == 2) new_enemy.x += 30
-			if (spawn_spot == 3) new_enemy.y -= 30
-			if (spawn_spot == 4) new_enemy.y += 30
+			if (spawn_spot == 1) new_enemy.x -= 20 
+			if (spawn_spot == 2) new_enemy.x += 20
+			if (spawn_spot == 3) new_enemy.y -= 20
+			if (spawn_spot == 4) new_enemy.y += 20
 
 		add(enemies,new_enemy)
  	end
