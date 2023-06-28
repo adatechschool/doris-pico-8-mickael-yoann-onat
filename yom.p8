@@ -32,7 +32,14 @@ function game_update()
 	end
  
 	update_camera()
-	if (btnp(❎)) shoot()
+	if btnp(:croix:) and p.state=="white" then
+	gandalf()
+	elseif (btnp(:croix:) and p.state=="normal")
+					or (btnp(:croix:) and p.state=="fire")
+					or (btnp(:croix:) and p.state=="water")
+					or (btnp(:croix:) and p.state=="plant")
+	then shoot()
+	end
 	update_sorts()
  	if (count_time==500) or enemies.length == 0 then 
 		spawn_enemies(ceil(rnd(flr(wave_size))))
@@ -336,6 +343,17 @@ end
 -->8
 --sorts
 
+-- function createStick()
+-- 	x=flr(rnd(120))
+-- 	y=flr(rnd(120-x))
+-- 	if x<60 then
+-- 		x=
+-- end
+
+function spawnStick()
+	if flr(rnd(2))==1 then
+		x=flr(rnd(60))
+end
 
 function shoot()
 sfx(shoot_sfx)
