@@ -73,19 +73,16 @@ function game_draw()
 	draw_player()
 	draw_msg()
 	hud()
-	draw_ui()
 
 	if p != nil and p.life == 0 then
 		return draw_gameover()
 	end
 	print("score:" .. score, hud_x, hud_y, 7)
 
-	--flash
 	if time() - flash_start_time < flash_duration then
 		rectfill(0, 0, 127 * 8, 127 * 8, 7)
 	end
 
-	--enemies
 	for e in all(enemies) do
 		if e.state == "normal" then
 			spr(44, e.x * 8 + e.eox, e.y * 8 + e.eoy)
@@ -99,15 +96,12 @@ function game_draw()
 		if e.state == "plant" then
 			spr(62, e.x * 8 + e.eox, e.y * 8 + e.eoy)
 		end
-		--print(e.state)
 	end
 
 	for s in all(sorts) do
 		spr(p.power_sprite, s.x * 8, s.y * 8)
 	end
 
-	--	print(p.ballspeed)
-	--	print(p.axe)
 end
 
 function menu_update()
@@ -171,9 +165,6 @@ function hud()
 		spr(67, hud_x + 113, hud_y)
 		spr(67, hud_x + 119, hud_y)
 	end
-end
-function draw_ui()
-	hud()
 end
 
 function draw_game_state()
@@ -251,11 +242,6 @@ function player_movement()
 	newx = p.x
 	newy = p.y
 
-	--test de sante
-	--  (btn(5)) then
-	--	if (live >0) live -=1
-	--end
-
 	if p.anim_t == 0 then
 		newox = 0
 		newoy = 0
@@ -294,7 +280,6 @@ function player_movement()
 			end
 		end
 	end
-	-- interact(newx,newy)
 
 	if (newx != p.x or newy != p.y) and not check_flag(0, newx, newy) then
 		p.x = mid(0, newx, 127)
@@ -309,12 +294,6 @@ function player_movement()
 	p.ox = p.start_ox * p.anim_t
 	p.oy = p.start_oy * p.anim_t
 
-	-- //function interact(x,y)
-	-- // if check_flag(2,x,y) then
-	-- //pick_up_power(x,y)
-
-	--  //end
-	-- //end
 	change_state()
 end
 
@@ -734,8 +713,6 @@ function draw_game()
 
 	spr(48, 108, 1)
 	print(cher, 118, 2, 14)
-
-	--print(#buls,5,5,7)
 end
 
 function draw_start()
