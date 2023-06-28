@@ -28,7 +28,7 @@ end
 
 function game_update()
 	if p.life > 0 then
-		spawnStick()
+		spawn_stick()
 		update_msg()
 
 		if not music_start then
@@ -339,36 +339,43 @@ function change_state()
 	elseif check_flag(4, p.x, p.y) then
 		p.state = "white"
 		p.sprite = 39
+		mset(p.x,p.y,1)
 	end
 end
 
 -->8
 --sorts
 
-function createStick()
-	x_stick = flr(rnd(120))
-	y_stick = flr(rnd(120 - x))
-	if x_stick < 60 then
-		x_stick = 120 - x_stick * -1
-	else
-		x_stick -= 60
+function create_stick()
+	x_stick=flr(rnd(120))
+	y_stick=flr(rnd(120))
+	if x_stick<60 then
+		x_stick = 120 - x_stick * (-1)
+	else 
+	x_stick -=60
 	end
-	if y_stick < 60 then
-		y_stick = 120 - y_stick * -1
+		if y_stick<60 then
+		y_stick = 120 - y_stick * (-1)
+	else 
+	y_stick -= 60
+	end
+
+	if (mget(p.x+x_stick,p.x+y_stick) == 1) then
+		mset(p.x+x_stick,p.y+y_stick,026)
 	else
-		y_stick -= 60
+	create_stick()
 	end
 
 	if fget(x_stick, y_stick) == 0 then
-		mset(x_stick, y_stick, 26)
+		mset(x_stick, y_stick, 55)
 	else
-		createStick()
+		create_stick()
 	end
 end
 
-function spawnStick()
-	if flr(rnd(1)) == 1 then
-		createStick()
+function spawn_stick()
+	if flr(rnd(100))==1 then
+		create_stick()
 	end
 end
 
