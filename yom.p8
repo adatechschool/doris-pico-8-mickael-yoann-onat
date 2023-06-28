@@ -444,7 +444,11 @@ function spawn_enemies(amount)
 			state = state_init
 		}
 		local spawn_spot = flr(rnd(4)) + 1
-		if (spawn_spot == 1) new_enemy.x -= 10 if (spawn_spot == 2) new_enemy.x += 10 if (spawn_spot == 3) new_enemy.y -= 10 if (spawn_spot == 4) new_enemy.y += 10 add(enemies, new_enemy)
+		if (spawn_spot == 1) new_enemy.x -= 10
+		if (spawn_spot == 2) new_enemy.x += 10 
+		if (spawn_spot == 3) new_enemy.y -= 10 
+		if (spawn_spot == 4) new_enemy.y += 10 
+		add(enemies, new_enemy)
 	end
 end
 
