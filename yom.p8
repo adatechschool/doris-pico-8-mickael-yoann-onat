@@ -17,12 +17,9 @@ function _init()
  music_start=false
  init_game_state()
  score=0
-<<<<<<< HEAD
  flash_duration = 1
  flash_start_time = 0
-=======
  wave_count=10
->>>>>>> aafa50a34ca6a86fe96beb0f674ae6d3c414937d
 end
 
 function game_update()
@@ -74,8 +71,8 @@ function game_draw()
 	draw_msg()
 	hud()
 	draw_ui()
---  print("score:"..score,hud_x,hud_y,7)
- print (enemies==0)
+print("score:"..score,hud_x,hud_y,7)
+ --print (enemies==0)
 	
 	--flash
 	if time()-flash_start_time < flash_duration then
@@ -580,6 +577,7 @@ function update_enemies()
 			if ((s.x-e.x)<0.8) and ((s.y-e.y)<0.8) and ((s.x-e.x>-0.8)) and ((s.y-e.y)>-0.8)then
 				if p.state=="normal" then
 					e.life -=1
+					del(sorts,s)
 				end
 				
 				if p.state=="fire" then	
