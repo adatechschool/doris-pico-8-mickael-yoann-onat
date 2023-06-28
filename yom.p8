@@ -8,7 +8,7 @@ function _init()
  create_player()
  sorts={}
  enemies={}
-	count_time = 200
+	count_time = 400
  _update= menu_update
  _draw= menu_draw
  init_msg()
@@ -17,8 +17,12 @@ function _init()
  music_start=false
  init_game_state()
  score=0
+<<<<<<< HEAD
  flash_duration = 1
  flash_start_time = 0
+=======
+ wave_count=10
+>>>>>>> aafa50a34ca6a86fe96beb0f674ae6d3c414937d
 end
 
 function game_update()
@@ -47,10 +51,11 @@ function game_update()
 	
 	 
 	update_sorts()
- 	if count_time==500 then -- 5 secondes environ
-		spawn_enemies(ceil(rnd(wave_size)))
+ 	if (count_time==500) or enemies.length == 0 then 
+		spawn_enemies(ceil(rnd(flr(wave_size))))
 		count_time=0
-		wave_size += 1
+		wave_size += 1/(wave_count/10)
+		wave_count += 1
 	end
 	update_enemies()
 	whereIs_topLeft()
@@ -68,7 +73,8 @@ function game_draw()
 	draw_msg()
 	hud()
 	draw_ui()
-	print("score:"..score,hud_x,hud_y,7)
+--  print("score:"..score,hud_x,hud_y,7)
+ print (enemies==0)
 	
 	--flash
 	if time()-flash_start_time < flash_duration then
@@ -431,10 +437,10 @@ function spawn_enemies(amount)
 		state=state_init
 		}
 		local spawn_spot = flr(rnd(4))+1
-			if (spawn_spot == 1) new_enemy.x -= 30 
-			if (spawn_spot == 2) new_enemy.x += 30
-			if (spawn_spot == 3) new_enemy.y -= 30
-			if (spawn_spot == 4) new_enemy.y += 30
+			if (spawn_spot == 1) new_enemy.x -= 10
+			if (spawn_spot == 2) new_enemy.x += 10
+			if (spawn_spot == 3) new_enemy.y -= 10
+			if (spawn_spot == 4) new_enemy.y += 10
 
 		add(enemies,new_enemy)
  	end
@@ -458,12 +464,10 @@ function update_enemies()
 			if p.x>e.x then
 				
 				e.x += 1
-				-- e.eox = e.x
 			
 			elseif p.x<e.x then
 				
 				e.x -= 1
-				-- e.eox = e.x
 				
 			end
 		
@@ -471,12 +475,10 @@ function update_enemies()
 			if p.y>e.y then
 				
 				e.y += 1
-				-- e.eoy = e.y
 				
 			elseif p.y<e.y then
  				
 				e.y -= 1
-				-- e.eoy = e.y
 		
 			end
 		end
@@ -553,36 +555,42 @@ function update_enemies()
 				end
 				
 				if p.state=="fire" then	
-				 if e.state=="water" then
-				 	e.life -=0
-				 elseif e.state=="plant" then
-				 	e.life -=2
-				 else
-				 	e.life -=1
+				 	if e.state=="water" then
+				 		e.life -=0
+				 	elseif e.state=="plant" then
+				 		e.life -=2
+						del(sorts,s)
+				 	else
+				 		e.life -=1
+						del(sorts,s)
 					end
 				end
 				
 				if p.state=="water" then	
-				 if e.state=="plant" then
-				 	e.life -=0
-				 elseif e.state=="fire" then
-				 	e.life -=2
-				 else
-				 	e.life -=1
+				 	if e.state=="plant" then
+				 		e.life -=0
+				 	elseif e.state=="fire" then
+				 		e.life -=2
+						del(sorts,s)
+				 	else
+				 		e.life -=1
+						del(sorts,s)
 					end
 				end
 				
 				if p.state=="plant" then	
-				 if e.state=="fire" then
-				 	e.life -=0
-				 elseif e.state=="water" then
-				 	e.life -=2
-				 else
-				 	e.life -=1
+				 	if e.state=="fire" then
+				 		e.life -=0
+				 	elseif e.state=="water" then
+				 		e.life -=2
+						del(sorts,s)
+				 	else
+				 		e.life -=1
+						del(sorts,s)
 					end
 				end
 				
-			del(sorts,s)
+			
 			end
 		
 		end
