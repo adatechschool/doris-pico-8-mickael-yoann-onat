@@ -21,7 +21,7 @@ hud_y=0
 end
 
 function game_update()
-	spawnStick()
+	spawn_stick()
  update_msg()
  	if not music_start then
   --music(0)
@@ -337,9 +337,9 @@ end
 -->8
 --sorts
 
-function createStick()
+function create_stick()
 	x_stick=flr(rnd(120))
-	y_stick=flr(rnd(120-x))
+	y_stick=flr(rnd(120))
 	if x_stick<60 then
 		x_stick = 120 - x_stick * (-1)
 	else 
@@ -351,17 +351,17 @@ function createStick()
 	y_stick -= 60
 	end
 
-	if fget(x_stick,y_stick) == 0 then
-		mset(x_stick,y_stick,26)
+	if (mget(p.x+x_stick,p.x+y_stick) == 1) then
+		mset(p.x+x_stick,p.y+y_stick,026)
 	else
-	createStick()
+	create_stick()
 	end
 
 end
 
-function spawnStick()
-	if flr(rnd(1))==1 then
-		createStick()
+function spawn_stick()
+	if flr(rnd(1000))==1 then
+		create_stick()
 	end
 end
 
