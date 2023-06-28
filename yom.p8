@@ -428,12 +428,10 @@ function update_enemies()
 			if p.x>e.x then
 				
 				e.x += 1
-				-- e.eox = e.x
 			
 			elseif p.x<e.x then
 				
 				e.x -= 1
-				-- e.eox = e.x
 				
 			end
 		
@@ -441,12 +439,10 @@ function update_enemies()
 			if p.y>e.y then
 				
 				e.y += 1
-				-- e.eoy = e.y
 				
 			elseif p.y<e.y then
  				
 				e.y -= 1
-				-- e.eoy = e.y
 		
 			end
 		end
@@ -523,36 +519,42 @@ function update_enemies()
 				end
 				
 				if p.state=="fire" then	
-				 if e.state=="water" then
-				 	e.life -=0
-				 elseif e.state=="plant" then
-				 	e.life -=2
-				 else
-				 	e.life -=1
+				 	if e.state=="water" then
+				 		e.life -=0
+				 	elseif e.state=="plant" then
+				 		e.life -=2
+						del(sorts,s)
+				 	else
+				 		e.life -=1
+						del(sorts,s)
 					end
 				end
 				
 				if p.state=="water" then	
-				 if e.state=="plant" then
-				 	e.life -=0
-				 elseif e.state=="fire" then
-				 	e.life -=2
-				 else
-				 	e.life -=1
+				 	if e.state=="plant" then
+				 		e.life -=0
+				 	elseif e.state=="fire" then
+				 		e.life -=2
+						del(sorts,s)
+				 	else
+				 		e.life -=1
+						del(sorts,s)
 					end
 				end
 				
 				if p.state=="plant" then	
-				 if e.state=="fire" then
-				 	e.life -=0
-				 elseif e.state=="water" then
-				 	e.life -=2
-				 else
-				 	e.life -=1
+				 	if e.state=="fire" then
+				 		e.life -=0
+				 	elseif e.state=="water" then
+				 		e.life -=2
+						del(sorts,s)
+				 	else
+				 		e.life -=1
+						del(sorts,s)
 					end
 				end
 				
-			del(sorts,s)
+			
 			end
 		
 		end
