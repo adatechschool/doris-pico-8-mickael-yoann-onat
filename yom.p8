@@ -26,6 +26,7 @@ function _init()
 end
 
 function game_update()
+	spawnStick()
  update_msg()
  	if not music_start then
   --music(0)
@@ -361,6 +362,33 @@ end
 -->8
 --sorts
 
+function createStick()
+	x_stick=flr(rnd(120))
+	y_stick=flr(rnd(120-x))
+	if x_stick<60 then
+		x_stick = 120 - x_stick * (-1)
+	else 
+	x_stick -=60
+	end
+		if y_stick<60 then
+		y_stick = 120 - y_stick * (-1)
+	else 
+	y_stick -= 60
+	end
+
+	if fget(x_stick,y_stick) == 0 then
+		mset(x_stick,y_stick,26)
+	else
+	createStick()
+	end
+
+end
+
+function spawnStick()
+	if flr(rnd(1))==1 then
+		createStick()
+	end
+end
 
 function shoot()
 sfx(shoot_sfx)
