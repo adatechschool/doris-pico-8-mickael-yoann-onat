@@ -349,6 +349,7 @@ function change_state()
 	elseif check_flag(4,p.x,p.y) then
 	p.state="white"
 	p.sprite=39
+	mset(p.x,p.y,1)
 	end
 end
 
