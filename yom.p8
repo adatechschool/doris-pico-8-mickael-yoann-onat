@@ -3,66 +3,69 @@ version 38
 __lua__
 
 function _init()
- hud_x=0
- hud_y=0
- create_player()
- sorts={}
- enemies={}
+	hud_x = 0
+	hud_y = 0
+	create_player()
+	sorts = {}
+	enemies = {}
 	count_time = 400
- _update= menu_update
- _draw= menu_draw
- init_msg()
-	create_msg("yom",c_intro_text_1,
-	c_intro_text_2, c_intro_text_3,c_intro_text_4)
- music_start=false
- init_game_state()
- score=0
- flash_duration = 1
- flash_start_time = 0
- wave_count=10
+	_update = menu_update
+	_draw = draw_start
+	init_msg()
+	create_msg(
+		c_intro_text_1,
+		c_intro_text_2, c_intro_text_3, c_intro_text_4
+	)
+	music_start = false
+	init_game_state()
+	score = 0
+	startscreen()
+	blinkt = 1
+	flash_duration = 1
+	flash_start_time = 0
+	wave_count = 10
 end
 
 function game_update()
-	spawnStick()
- update_msg()
- 	if not music_start then
-  --music(0)
-		music_start=true
-	end
-	if not messages[1] then
-		player_movement()
-		count_time +=1
-	end
- 
-	update_camera()
-	
-	--shoot
-	if btnp(❎) and p.state=="white" then
-	gandalf()
-	elseif (btnp(❎) and p.state=="normal") 
-					or (btnp(❎) and p.state=="fire")
-					or (btnp(❎) and p.state=="water")
-					or (btnp(❎) and p.state=="plant")
-	then shoot()
-	end
-	
-	
-	 
-	update_sorts()
- 	if (count_time==500) or enemies.length == 0 then 
-		spawn_enemies(ceil(rnd(flr(wave_size))))
-		count_time=0
-		wave_size += 1/(wave_count/10)
-		wave_count += 1
-	end
-	update_enemies()
-	whereIs_topLeft()
+	if p.life > 0 then
+		spawn_stick()
+		update_msg()
 
+		if not music_start then
+			music(6)
+			music_start = true
+		end
+		if not messages[1] then
+			player_movement()
+			count_time += 1
+		end
+
+		update_camera()
+
+		--shoot
+		if btnp(❎) and p.state == "white" then
+			gandalf()
+		elseif btnp(❎) and p.state == "normal"
+				or btnp(❎) and p.state == "fire"
+				or btnp(❎) and p.state == "water"
+				or btnp(❎) and p.state == "plant" then
+			shoot()
+		end
+
+		update_sorts()
+		if count_time == 500 or enemies.length == 0 then
+			spawn_enemies(ceil(rnd(flr(wave_size))))
+			count_time = 0
+			wave_size += 1 / (wave_count / 10)
+			wave_count += 1
+		end
+		update_enemies()
+		whereIs_topLeft()
+	end
+	if p.life == 0 then
+		update_gameover()
+	end
 end
-
-
-
-
 
 function game_draw()
 	cls()
@@ -70,147 +73,138 @@ function game_draw()
 	draw_player()
 	draw_msg()
 	hud()
-	draw_ui()
-print("score:"..score,hud_x,hud_y,7)
- --print (enemies==0)
-	
-	--flash
-	if time()-flash_start_time < flash_duration then
-	rectfill(0, 0, 127*8, 127*8, 7)
+
+	if p != nil and p.life == 0 then
+		return draw_gameover()
+	end
+	print("score:" .. score, hud_x, hud_y, 7)
+
+	if time() - flash_start_time < flash_duration then
+		rectfill(0, 0, 127 * 8, 127 * 8, 7)
 	end
 
-	--enemies
-	for e in all (enemies) do
-		if e.state=="normal" then
-			spr(44,e.x*8+e.eox,e.y*8+e.eoy)
+	for e in all(enemies) do
+		if e.state == "normal" then
+			spr(44, e.x * 8 + e.eox, e.y * 8 + e.eoy)
 		end
-		if e.state=="fire" then
-			spr(60,e.x*8+e.eox,e.y*8+e.eoy)
+		if e.state == "fire" then
+			spr(60, e.x * 8 + e.eox, e.y * 8 + e.eoy)
 		end
-		if e.state=="water" then
-			spr(61,e.x*8+e.eox,e.y*8+e.eoy)
+		if e.state == "water" then
+			spr(61, e.x * 8 + e.eox, e.y * 8 + e.eoy)
 		end
-		if e.state=="plant" then
-			spr(62,e.x*8+e.eox,e.y*8+e.eoy)	
+		if e.state == "plant" then
+			spr(62, e.x * 8 + e.eox, e.y * 8 + e.eoy)
 		end
-		--print(e.state)
-	end
-	
-	for s in all (sorts) do
-		spr(p.power_sprite,s.x*8,s.y*8)
 	end
 
---	print(p.ballspeed)
---	print(p.axe)
-
+	for s in all(sorts) do
+		spr(p.power_sprite, s.x * 8, s.y * 8)
+	end
 
 end
 
-function  menu_update()
- if  btn(5) then
- _update= game_update
- _draw= game_draw
- end
+function menu_update()
+	if btn(5) then
+		_update = game_update
+		_draw = game_draw
+	end
 end
 
-
-function menu_draw ()
-camera()
+function menu_draw()
+	camera()
 	cls(3)
-	rectfill(31,83,105,119,14)
-	rectfill(28,80,102,116,2)
-	spr(40,128/2-4,64)
-	spr(44,128/1-20,64)
-	spr(44,128/1-40,64)
-	spr(44,128/1-100,64)
-	spr(44,128/1-120,64)
-	spr(16,128/1-120,20,2,2)
-	spr(57,128/1-47,64)
-	spr(57,128/1-58,64)
- print("yom",60,35,7)
-	print(c_title_text,25,86,7)
- print("press x  pour start",30,105,7)
- c_title_text="l'invasion des monstres!"
+	rectfill(31, 83, 105, 119, 14)
+	rectfill(28, 80, 102, 116, 2)
+	spr(40, 128 / 2 - 4, 64)
+	spr(44, 128 / 1 - 20, 64)
+	spr(44, 128 / 1 - 40, 64)
+	spr(44, 128 / 1 - 100, 64)
+	spr(44, 128 / 1 - 120, 64)
+	spr(16, 128 / 1 - 120, 20, 2, 2)
+	spr(57, 128 / 1 - 47, 64)
+	spr(57, 128 / 1 - 58, 64)
+	print("yom", 60, 35, 7)
+	print(c_title_text, 25, 86, 7)
+	print("press x  pour start", 30, 105, 7)
+	c_title_text = "l'invasion des monstres!"
 end
- 
+
 function whereIs_topLeft()
-if(p.x<=7) then
-	hud_x = 0
-elseif(p.x>=120) then
-	hud_x = 112*8
-else
-	hud_x = p.x*8+p.ox-7.5*8
+	if p.x <= 7 then
+		hud_x = 0
+	elseif p.x >= 120 then
+		hud_x = 112 * 8
+	else
+		hud_x = p.x * 8 + p.ox - 7.5 * 8
+	end
+	if p.y <= 7 then
+		hud_y = 0
+	elseif p.y >= 56 then
+		hud_y = 48 * 8
+	else
+		hud_y = p.y * 8 + p.oy - 7.5 * 8
+	end
 end
-if(p.y<=7) then
-	hud_y = 0
-elseif(p.y>=56) then
-	hud_y = 48*8
-else 
-	hud_y = p.y*8+p.oy-7.5*8
+
+function hud()
+	if p.life == 3 then
+		spr(65, hud_x + 107, hud_y)
+		spr(65, hud_x + 113, hud_y)
+		spr(65, hud_x + 119, hud_y)
+	elseif p.life == 2 then
+		spr(65, hud_x + 107, hud_y)
+		spr(65, hud_x + 113, hud_y)
+		spr(67, hud_x + 119, hud_y)
+	elseif p.life == 1 then
+		spr(65, hud_x + 107, hud_y)
+		spr(67, hud_x + 113, hud_y)
+		spr(67, hud_x + 119, hud_y)
+	elseif p.life <= 0 then
+		spr(67, hud_x + 107, hud_y)
+		spr(67, hud_x + 113, hud_y)
+		spr(67, hud_x + 119, hud_y)
+	end
 end
-end
- 
- function hud()
-
-	if p.life==3 then
-		spr(65,hud_x+107,hud_y)
-	  	spr(65,hud_x+113,hud_y)
-	  	spr(65,hud_x+119,hud_y)
-  	elseif p.life==2 then
-		spr(65,hud_x+107,hud_y)
-		spr(65,hud_x+113,hud_y)
-		spr(67,hud_x+119,hud_y)
-   elseif p.life==1 then
-		spr(65,hud_x+107,hud_y)
-		spr(67,hud_x+113,hud_y)
-		spr(67,hud_x+119,hud_y)
-   elseif p.life<=0 then
-		spr(67,hud_x+107,hud_y)
-		spr(67,hud_x+113,hud_y)
-		spr(67,hud_x+119,hud_y)
-  
- 	end
-end 
-function draw_ui()
-hud()
-
- end
- 
-
-
 
 function draw_game_state()
-
-  cls()
-  print("hp: " .. state.life, 0, 0, 7)
+	cls()
+	print("hp: " .. state.life, 0, 0, 7)
 end
+
+function startscreen()
+	makestars()
+	mode = "start"
+	music(2)
+end
+
+function startgame()
+	t = 0
+	makestars()
+end
+
 -->8
 --map
 
 function draw_map()
-	map(0,0,0,0,128,64)
+	map(0, 0, 0, 0, 128, 64)
 end
 
-function check_flag(flag,x,y)
-	local sprite=mget(x,y)
-	return fget(sprite,flag)
+function check_flag(flag, x, y)
+	local sprite = mget(x, y)
+	return fget(sprite, flag)
 end
-
-
-
-
 
 function update_camera()
-	local camx=mid(0,p.x-7.5+p.ox/8,127-15)
-	local camy=mid(0,p.y-7.5+p.oy/8,63-15)
-	camera(camx*8,camy*8)
+	local camx = mid(0, p.x - 7.5 + p.ox / 8, 127 - 15)
+	local camy = mid(0, p.y - 7.5 + p.oy / 8, 63 - 15)
+	camera(camx * 8, camy * 8)
 end
-
 
 //function next_tile(x,y)
 
 // sprite=mget(x,y)
- //mset(x,y,sprite+1)
+//mset(x,y,sprite+1)
 //end
 
 //function pick_up_power(x,y)
@@ -218,115 +212,90 @@ end
 //p.power+=1
 //sfx(1)
 //end
-    
-    
+
 -->8
 --player
 
 function create_player()
-	p={x=5,y=5,
-	ox=0, oy=0,
-	start_ox=0,start_oy=0,
-	anim_t=0,
-	sprite=40,
-	power=1,ballspeed=3,portee=40,
-	life=3,
-	axe="x",
-	state="normal",
-	power_sprite=41,
-	shoot_sfx=sfx(06)
+	p = {
+		x = 5, y = 5,
+		ox = 0, oy = 0,
+		start_ox = 0, start_oy = 0,
+		anim_t = 0,
+		sprite = 40,
+		power = 1, ballspeed = 3, portee = 40,
+		life = 3,
+		axe = "x",
+		state = "normal",
+		power_sprite = 41,
+		shoot_sfx = sfx(06)
 	}
 end
 
-
-
-
 function draw_player()
-	spr(p.sprite,p.x*8+p.ox,p.y*8+p.oy)
-
+	spr(p.sprite, p.x * 8 + p.ox, p.y * 8 + p.oy)
 end
 
 sens = 0
 
 function player_movement()
+	newx = p.x
+	newy = p.y
 
-newx=p.x
-newy=p.y
+	if p.anim_t == 0 then
+		newox = 0
+		newoy = 0
 
---test de sante 
---  (btn(5)) then 
---	if (live >0) live -=1
---end
-
-
-
-
-
-
-if p.anim_t == 0 then
-
-	newox=0
-	newoy=0
-
-	if btn(➡️) then
-		newx+=1
-		newox=-8
-		p.axe = "x"
- 		if p.ballspeed<0 and p.portee<0 then
-  		p.ballspeed=p.ballspeed*(-1)
-  		p.portee=p.portee*(-1)
- 		end
-	elseif btn(⬅️) then
- 		newx-=1
- 		newox=8
- 		p.axe = "x"
- 		if p.ballspeed>0 and p.portee>0 then
-  			p.ballspeed=p.ballspeed*(-1)
-  			p.portee=p.portee*(-1)
- 		end
-	elseif btn(⬇️) then
-		newy+=1
-		newoy=-8
-		p.axe = "y"
-		if p.ballspeed<0 then
-  			p.ballspeed=p.ballspeed*(-1)
-  			p.portee=p.portee*(-1)
- 		end
-	elseif btn(⬆️) then
-		newy-=1
-		newoy=8
-		p.axe = "y"
-		if p.ballspeed>0 then
-  			p.ballspeed=p.ballspeed*(-1)
-  			p.portee=p.portee*(-1)
- 		end
+		if btn(➡️) then
+			newx += 1
+			newox = -8
+			p.axe = "x"
+			if p.ballspeed < 0 and p.portee < 0 then
+				p.ballspeed = p.ballspeed * -1
+				p.portee = p.portee * -1
+			end
+		elseif btn(⬅️) then
+			newx -= 1
+			newox = 8
+			p.axe = "x"
+			if p.ballspeed > 0 and p.portee > 0 then
+				p.ballspeed = p.ballspeed * -1
+				p.portee = p.portee * -1
+			end
+		elseif btn(⬇️) then
+			newy += 1
+			newoy = -8
+			p.axe = "y"
+			if p.ballspeed < 0 then
+				p.ballspeed = p.ballspeed * -1
+				p.portee = p.portee * -1
+			end
+		elseif btn(⬆️) then
+			newy -= 1
+			newoy = 8
+			p.axe = "y"
+			if p.ballspeed > 0 then
+				p.ballspeed = p.ballspeed * -1
+				p.portee = p.portee * -1
+			end
+		end
 	end
-end
--- interact(newx,newy)
-	
-	if (newx!=p.x or newy!=p.y) and not check_flag(0,newx,newy) then
-		p.x=mid(0,newx,127)
-		p.y=mid(0,newy,63)
-		p.start_ox=newox
-		p.start_oy=newoy
-		p.anim_t=1
+
+	if (newx != p.x or newy != p.y) and not check_flag(0, newx, newy) then
+		p.x = mid(0, newx, 127)
+		p.y = mid(0, newy, 63)
+		p.start_ox = newox
+		p.start_oy = newoy
+		p.anim_t = 1
 	end
-	
---animation joueur
-p.anim_t=max(p.anim_t-0.4,0)
-p.ox=p.start_ox*p.anim_t
-p.oy=p.start_oy*p.anim_t
 
--- //function interact(x,y)
--- // if check_flag(2,x,y) then
--- //pick_up_power(x,y)
+	--animation joueur
+	p.anim_t = max(p.anim_t - 0.4, 0)
+	p.ox = p.start_ox * p.anim_t
+	p.oy = p.start_oy * p.anim_t
 
---  //end
--- //end
-change_state()
-
+	change_state()
 end
-
 
 --interaction 3 elements
 
@@ -353,283 +322,249 @@ function change_state()
 	end
 end
 
-
-
-
-
 -->8
 --sorts
 
-function createStick()
-	x_stick=flr(rnd(120))
-	y_stick=flr(rnd(120-x))
-	if x_stick<60 then
-		x_stick = 120 - x_stick * (-1)
-	else 
-	x_stick -=60
+function create_stick()
+	function random_location()
+		x_stick=flr(rnd(120))
+		y_stick=flr(rnd(120))
 	end
+	random_location()
+	print("oook")
+		if x_stick<60 then
+			x_stick = 120 - x_stick * (-1)
+		else 
+			x_stick -=60
+		end
 		if y_stick<60 then
-		y_stick = 120 - y_stick * (-1)
-	else 
-	y_stick -= 60
-	end
+			y_stick = 120 - y_stick * (-1)
+		else 
+			y_stick -= 60
+		end
 
-	if fget(x_stick,y_stick) == 0 then
-		mset(x_stick,y_stick,26)
+		if (mget(p.x+x_stick,p.x+y_stick) == 1) then
+			mset(p.x+x_stick,p.y+y_stick,055)
+		else
+			random_location()
+		end
+
+	if mget(x_stick, y_stick) == 01 then
+		mset(x_stick, y_stick,055)
 	else
-	createStick()
+		create_stick()
 	end
-
 end
 
-function spawnStick()
-	if flr(rnd(1))==1 then
-		createStick()
+function spawn_stick()
+	if flr(rnd(1000))==1 then
+		create_stick()
 	end
 end
 
 function shoot()
-sfx(shoot_sfx)
-local player_x=p.x
-local player_y=p.y
-local player_portee = p.portee
-local player_axe = p.axe
-local player_ballspeed = p.ballspeed
-	local new_ball={
+	sfx(shoot_sfx)
+	local player_x = p.x
+	local player_y = p.y
+	local player_portee = p.portee
+	local player_axe = p.axe
+	local player_ballspeed = p.ballspeed
+	local new_ball = {
 		position_init_x = player_x,
 		position_init_y = player_y,
-		x=player_x,
-		y=player_y,
-		speed=player_ballspeed/8,
-		portee=player_portee/8,
+		x = player_x,
+		y = player_y,
+		speed = player_ballspeed / 8,
+		portee = player_portee / 8,
 		axe = player_axe
 	}
-	add(sorts,new_ball)
+	add(sorts, new_ball)
 end
-
-
 
 function update_sorts()
 	for i, s in ipairs(sorts) do
-		
 		if s.axe == "x" then
-		s.x += s.speed
+			s.x += s.speed
 		end
 		if s.axe == "y" then
-		s.y += s.speed
+			s.y += s.speed
 		end
-		if (s.portee > 0 and s.x > (s.position_init_x + s.portee)) then
+		if s.portee > 0 and s.x > s.position_init_x + s.portee then
 			del(sorts, s)
-		elseif (s.portee < 0 and s.x < (s.position_init_x + s.portee)) then
+		elseif s.portee < 0 and s.x < s.position_init_x + s.portee then
 			del(sorts, s)
-		elseif (s.portee > 0 and s.y > (s.position_init_y + s.portee)) then
+		elseif s.portee > 0 and s.y > s.position_init_y + s.portee then
 			del(sorts, s)
-		elseif (s.portee < 0 and s.y < (s.position_init_y + s.portee)) then
+		elseif s.portee < 0 and s.y < s.position_init_y + s.portee then
 			del(sorts, s)
 		end
 	end
 end
 
 function gandalf()
-		if p.state=="white" then
-			flash_start_time = time() -- t-0 du flash			
-			enemies={}
-			score += 5
-			p.state="normal"
-			p.sprite=40
-		end
+	if p.state == "white" then
+		flash_start_time = time() -- t-0 du flash
+		enemies = {}
+		score += 5
+		p.state = "normal"
+		p.sprite = 40
+	end
 end
 -->8
 --enemies
 
 wave_size = 5
-elements={"normal", "fire", "plant", "water"}
+elements = { "normal", "fire", "plant", "water" }
 
 function spawn_enemies(amount)
-	gap=(20-8*amount)/(amount+1)
-	state_init=rnd(elements)
-	for i=1,amount do
-		new_enemy={
-		x=p.x+gap*i+8*(i-1),
-		y=p.y+gap*i+8*(i-1),
-		blocked = 0,
-		anim_te=0,
-		start_eox=0,
-		start_eoy=0,   
-		life=2,
-		speed=0.1,
-		eox = 0,
-		eoy = 0,
-		state=state_init
+	gap = (20 - 8 * amount) / (amount + 1)
+	state_init = rnd(elements)
+	for i = 1, amount do
+		new_enemy = {
+			x = p.x + gap * i + 8 * (i - 1),
+			y = p.y + gap * i + 8 * (i - 1),
+			blocked = 0,
+			anim_te = 0,
+			start_eox = 0,
+			start_eoy = 0,
+			life = 2,
+			speed = 0.1,
+			eox = 0,
+			eoy = 0,
+			state = state_init
 		}
-		local spawn_spot = flr(rnd(4))+1
-			if (spawn_spot == 1) new_enemy.x -= 10
-			if (spawn_spot == 2) new_enemy.x += 10
-			if (spawn_spot == 3) new_enemy.y -= 10
-			if (spawn_spot == 4) new_enemy.y += 10
-
-		add(enemies,new_enemy)
- 	end
+		local spawn_spot = flr(rnd(4)) + 1
+		if (spawn_spot == 1) new_enemy.x -= 10
+		if (spawn_spot == 2) new_enemy.x += 10 
+		if (spawn_spot == 3) new_enemy.y -= 10 
+		if (spawn_spot == 4) new_enemy.y += 10 
+		add(enemies, new_enemy)
+	end
 end
 
 function update_enemies()
-
-
-
-	if rnd(1)<0.5 then
-		change_way=true
-	else 
-		change_way=false
+	if rnd(1) < 0.5 then
+		change_way = true
+	else
+		change_way = false
 	end
 
 	for e in all(enemies) do
-
-		if (e.blocked>50 and ((p.x-e.x < -100/8) or (p.x-e.x > 100/8) or (p.y-e.y < -100/8) or (p.y-e.y > 100/8))) then
+		if e.blocked > 50 and (p.x - e.x < -100 / 8 or p.x - e.x > 100 / 8 or p.y - e.y < -100 / 8 or p.y - e.y > 100 / 8) then
 			e.anim_te = 0
-		
-			if p.x>e.x then
-				
-				e.x += 1
-			
-			elseif p.x<e.x then
-				
-				e.x -= 1
-				
-			end
-		
 
-			if p.y>e.y then
-				
+			if p.x > e.x then
+				e.x += 1
+			elseif p.x < e.x then
+				e.x -= 1
+			end
+
+			if p.y > e.y then
 				e.y += 1
-				
-			elseif p.y<e.y then
- 				
+			elseif p.y < e.y then
 				e.y -= 1
-		
 			end
 		end
 
-	
+
 		enemy_newx = e.x
-		enemy_newy= e.y
+		enemy_newy = e.y
 		enemy_newox = 0
 		enemy_newoy = 0
 
 		if e.anim_te == 0 then
-
-		
-			if p.x>e.x and not change_way then
-			
+			if p.x > e.x and not change_way then
 				enemy_newx += 1
 				enemy_newox = -8
-			
-			elseif p.x<e.x and not change_way then
-				
- 				enemy_newx -= 1
+			elseif p.x < e.x and not change_way then
+				enemy_newx -= 1
 				enemy_newox = 8
-				
 			end
-		
-		
 
-			if p.y>e.y and change_way then
-				
+			if p.y > e.y and change_way then
 				enemy_newy += 1
 				enemy_newoy = -8
-				
-			elseif p.y<e.y and change_way then
- 				
+			elseif p.y < e.y and change_way then
 				enemy_newy -= 1
 				enemy_newoy = 8
-		
 			end
 		end
 
-		if check_flag(0,enemy_newx,e.y) then
+		if check_flag(0, enemy_newx, e.y) then
 			e.blocked += 1
 		end
 
-		if check_flag(0,e.x,enemy_newy) then
+		if check_flag(0, e.x, enemy_newy) then
 			e.blocked += 1
 		end
 
-		if (enemy_newx!=e.x or enemy_newy!=e.y) and not check_flag(0,enemy_newx,enemy_newy) then
-			e.x=mid(0,enemy_newx,127)
-			e.y=mid(0,enemy_newy,63)
+		if (enemy_newx != e.x or enemy_newy != e.y) and not check_flag(0, enemy_newx, enemy_newy) then
+			e.x = mid(0, enemy_newx, 127)
+			e.y = mid(0, enemy_newy, 63)
 			e.start_eox = enemy_newox
 			e.start_eoy = enemy_newoy
-			e.anim_te=1
+			e.anim_te = 1
 			e.blocked = 0
-		
-		end	
-
-		e.anim_te=max(e.anim_te-e.speed,0)
-		e.eox=e.start_eox*e.anim_te
-		e.eoy=e.start_eoy*e.anim_te
-	
-		if ((e.x-p.x)<0.8) and ((e.y-p.y)<0.8) and ((e.x-p.x>-0.8)) and ((e.y-p.y)>-0.8) then
-			p.life -= 1
-			del(enemies,e)
 		end
 
-		
+		e.anim_te = max(e.anim_te - e.speed, 0)
+		e.eox = e.start_eox * e.anim_te
+		e.eoy = e.start_eoy * e.anim_te
+
+		if e.x - p.x < 0.8 and e.y - p.y < 0.8 and e.x - p.x > -0.8 and e.y - p.y > -0.8 then
+			p.life -= 1
+			del(enemies, e)
+		end
 
 		for s in all(sorts) do
-			if ((s.x-e.x)<0.8) and ((s.y-e.y)<0.8) and ((s.x-e.x>-0.8)) and ((s.y-e.y)>-0.8)then
-				if p.state=="normal" then
-					e.life -=1
-					del(sorts,s)
+			if s.x - e.x < 0.8 and s.y - e.y < 0.8 and s.x - e.x > -0.8 and s.y - e.y > -0.8 then
+				if p.state == "normal" then
+					e.life -= 1
+					del(sorts, s)
 				end
-				
-				if p.state=="fire" then	
-				 	if e.state=="water" then
-				 		e.life -=0
-				 	elseif e.state=="plant" then
-				 		e.life -=2
-						del(sorts,s)
-				 	else
-				 		e.life -=1
-						del(sorts,s)
+
+				if p.state == "fire" then
+					if e.state == "water" then
+						e.life -= 0
+					elseif e.state == "plant" then
+						e.life -= 2
+						del(sorts, s)
+					else
+						e.life -= 1
+						del(sorts, s)
 					end
 				end
-				
-				if p.state=="water" then	
-				 	if e.state=="plant" then
-				 		e.life -=0
-				 	elseif e.state=="fire" then
-				 		e.life -=2
-						del(sorts,s)
-				 	else
-				 		e.life -=1
-						del(sorts,s)
+
+				if p.state == "water" then
+					if e.state == "plant" then
+						e.life -= 0
+					elseif e.state == "fire" then
+						e.life -= 2
+						del(sorts, s)
+					else
+						e.life -= 1
+						del(sorts, s)
 					end
 				end
-				
-				if p.state=="plant" then	
-				 	if e.state=="fire" then
-				 		e.life -=0
-				 	elseif e.state=="water" then
-				 		e.life -=2
-						del(sorts,s)
-				 	else
-				 		e.life -=1
-						del(sorts,s)
+
+				if p.state == "plant" then
+					if e.state == "fire" then
+						e.life -= 0
+					elseif e.state == "water" then
+						e.life -= 2
+						del(sorts, s)
+					else
+						e.life -= 1
+						del(sorts, s)
 					end
 				end
-				
-			
 			end
-		
 		end
-		
-		
-		
-			if e.life == 0 then
-				del(enemies,e)
-				score += 1
-			end
-	 
-	
+
+		if e.life == 0 then
+			del(enemies, e)
+			score += 1
+		end
 	end
 end
 
@@ -646,7 +581,7 @@ normal={sprite=40,
 								--portee=50,
 								--active=true
 							}
-							
+
 fire		={sprite=36,
 								power=1,
 								power_sprite=57
@@ -655,7 +590,7 @@ fire		={sprite=36,
 								--portee=50,
 								--active=false
 							}
-							
+
 water	={sprite=37,
 								power=1,
 								power_sprite=58
@@ -664,7 +599,7 @@ water	={sprite=37,
 								--portee=50,
 								--active=false
 							}
-							
+
 plant	={sprite=38,
 								power=1,
 								power_sprite=59
@@ -674,7 +609,7 @@ plant	={sprite=38,
 							 --active=false
 							}
 
-	
+
 ----------------------------
 enemies
 
@@ -694,84 +629,193 @@ if p.fire then
  	p.fire.power=0
 	else if e.plant then
  	p.fire.power=2
-	
+
 else if p.water then
  if e.fire then
  	p.water.power=2
  else if e.plant then
  	p.water.power=0
-	
+
 else if p.plant then
  if e.fire then
  	p.plant.power=0
 	else if e.water then
  	p.plant.power=2
- 	
+
 ]]
 -->8
 --message
 
 function init_msg()
- msg_title=""
-	messages={}
+	msg_title = ""
+	messages = {}
 end
 
-function create_msg(name,...)
-	msg_title=name
-	messages={...}
+function create_msg(name, ...)
+	msg_title = name
+	messages = { ... }
 end
 
 function update_msg()
-	if (btnp(4)) then
+	if btnp(❎) then
 		if messages[1] then
 			sfx(0)
-			deli(messages,1)
+			deli(messages, 1)
 		end
 	end
 end
 
 function draw_msg()
 	if messages[1] then
-		local y=90
-		rectfill(10,y,15+#msg_title*3,
-			y+8,1)
-		print(msg_title,10,y+1,6)
-		rectfill(1,y+9,135,y+21,1)
-		print(messages[1],1,y+10,6)
+		local y = 90
+		rectfill(
+			10, y, 15 + #msg_title * 3,
+			y + 8, 1
+		)
+		print(msg_title, 10, y + 1, 6)
+		rectfill(1, y + 9, 135, y + 21, 1)
+		print(messages[1], 1, y + 10, 6)
 	end
 end
 
-c_intro_text_1="oh nonnnn! \npress c to continue"
-c_intro_text_2="une invasion de monstres...\npress c to continue"
-c_intro_text_3="je dois les battre a tout prix!!! \nle sort de la planete en depend!\npress c to continue"
-c_intro_text_4="press x to shoot"
-c_intro_text_5="you shall not pass !!!"
+c_intro_text_1 = "oh nonnnn!"
+c_intro_text_2 = "une invasion de monstres..."
+c_intro_text_3 = "je dois les battre a tout prix!!! \nle sort de la planete en depend!"
+c_intro_text_4 = "press x to shoot"
+c_intro_text_5 = "you shall not pass !!!"
 -->8
 
-
-
 function init_game_state()
-
-state = {
-    life = 100,
-      }
+	state = {
+		life = 100
+	}
 end
-
-
 
 function update_game_state()
-
- if ((e.x-p.x)<0.8) and ((e.y-p.y)<0.8) and ((e.x-p.x>-0.8)) and ((e.y-p.y)>-0.8) then
-    state.life = state.life - 1
-    
- end 
-   if btn(5) then
-    state.life = state.life + 1
-  end
+	if e.x - p.x < 0.8 and e.y - p.y < 0.8 and e.x - p.x > -0.8 and e.y - p.y > -0.8 then
+		state.life = state.life - 1
+	end
+	if btn(5) then
+		state.life = state.life + 1
+	end
 end
 
- 
- 
+-->8
+
+function draw_game()
+	if flash > 0 then
+		flash -= 1
+		cls(2)
+	else
+		cls(0)
+	end
+
+	starfield()
+
+	spr(48, 108, 1)
+	print(cher, 118, 2, 14)
+end
+
+function draw_start()
+	cls(0)
+	starfield()
+
+	spr(60, peekerx, 28 + sin(time() / 3.5) * 4)
+	if sin(time() / 3.5) > 0.5 then
+		peekerx = 30 + rnd(60)
+	end
+
+	spr(84, 40, 30, 12, 2)
+
+	cprint("press x  to start", 64, 90, blink())
+end
+
+function draw_over()
+	draw_game()
+	cprint("game over", 64, 40, 8)
+end
+
+function update_start()
+	animatestars(0.4)
+	if btn(5) then
+		_update = game_update
+		_draw = game_draw
+	end
+end
+-->8
+
+-- tools etoile
+
+function makestars()
+	stars = {}
+	for i = 1, 100 do
+		local newstar = {}
+		newstar.x = flr(rnd(128))
+		newstar.y = flr(rnd(128))
+		newstar.spd = rnd(1.5) + 0.5
+		add(stars, newstar)
+	end
+end
+
+function starfield()
+	for i = 1, #stars do
+		local mystar = stars[i]
+		local scol = 6
+
+		if mystar.spd < 1 then
+			scol = 1
+		elseif mystar.spd < 1.5 then
+			scol = 13
+		end
+
+		pset(mystar.x, mystar.y, scol)
+	end
+end
+
+function animatestars(spd)
+	if spd == nil then
+		spd = 1
+	end
+
+	for i = 1, #stars do
+		local mystar = stars[i]
+		mystar.y = mystar.y + mystar.spd * spd
+		if mystar.y > 128 then
+			mystar.y = mystar.y - 128
+		end
+	end
+end
+
+function blink()
+	local banim = { 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 7, 7, 6, 6, 5 }
+
+	if blinkt > #banim then
+		blinkt = 1
+	end
+
+	return banim[blinkt]
+end
+
+function cprint(txt, x, y, c)
+	print(txt, x - #txt * 2, y, c)
+end
+-->8
+-- game over
+function update_gameover()
+	if btn(5) then
+		_init()
+	end
+end
+
+function draw_gameover()
+	cls()
+	rectfill(p.x * 8 - 40, p.y * 8 + 20, p.x * 8 + 40, p.y * 8 - 20, 7)
+	rectfill(p.x * 8 - 40, p.y * 8 - 20, p.x * 8 + 40, p.y * 8 + 20, 7)
+	print(c_defeat_text, p.x * 8 - 25, p.y * 8 - 8, 0)
+	print("x pour recomencer", p.x * 8 - 30, p.y * 8 + 30, 7)
+
+	c_defeat_text = "game over!!\n\nessaye encore"
+end
 
 __gfx__
 dddddddd3333333333bbbb33cccccccc4444444433333333444444443333333333333333311311134d4d4d4dd6d6545422f44407777777773366663333333333
@@ -814,20 +858,20 @@ eeeeeeeeeeeeeeee33dddc33455555543333633377777cc733199233338888330000000066366666
 00000000000888000008860000066600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000080000000800000006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000007777777777777777777777777777770000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000077777777777777777777777777777777000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000777777777777777777777777777777777700000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000007777778e777e8778888877788878887777770000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000777777788e7e887888888877888e8887777770000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000077777777888887888e77887788888887777770000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000007777777778887788e777887788e8e887777770000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000007777777778877788e777887788777887777770000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000077777777887777788e78877788777887777770000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000077777777887777778888777788777887777770000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000007777777777777777777777777777777777700000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000777777777777777777777777777777777000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000077777777777777777777777777777770000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000007777777777777777777777777777000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -866,9 +910,9 @@ eeeeeeeeeeeeeeee33dddc33455555543333633377777cc733199233338888330000000066366666
 10000000e0d070d0d0d0d0d091d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0e0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0e0
 1010e01010101010101010101010101010101010101010101010101010101010101010101010101010f010101010101010101010101010101010101010101010
 10000000e0d0d0d0d0d0d0d091d0d0d0d0d0d0d0d0e0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0e0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d091d0d0d070d0d0d0e0
-10101010101010701010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010
+10101010101010701010101010101010101010101010101010101010101090101010101010101010101010101010101010101010101010101010101010101010
 10000000e0d0d0d0d0d0d0d0f1d0d0d0d0d0e0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d091d0d0d0d0d0d0d0e0
-1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010e010
+1010101010101010711010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010e010
 10000000e09191919191919191d0d0d0d0d0d0d0d0d0d0d0d0d070d0d0e0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d091d0d0d0d0d091d0d0d091919191e0
 1010101010101010101010e010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010
 10000000e0d0d0d0d0d0e0d0d070d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d070d0d0d0d0d0d09191d070d0d0d09191919191d0d0d0e0
@@ -946,10 +990,35 @@ __sfx__
 000200001f0001d0502005021050200501f0501c0501a050150500e0501a0500c050140501705018050150500f0500705003050010500105016000210001b0001000008000000000000000000000000000000000
 000200000330008550065500e5500855014550095501a55012550285500f5503955013550255501f5000a500095000b5000f5001250014500165001a50019500195001a5001c5000430004300000000000000000
 00040000007500175002750037500575007750097500c7500e7501075014750187501d750237500c70008700077000b70010700157001a7001a7001c7001f7002070004300033000330003300033000000000000
-001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010c0000290502c0002a00029055290552a000270502900024000290002000024000240352504527050240002a050240002f0052d0552c0552400029050240002400024000240002400024030250422905026200
 011800000e02010020110201302011020100200e0200c0200e02011020100200e0200e020110200e0200e0200e02010020110201302011020100200e0200c0201002011020100200e0200e020110200e0200e020
 011800002602000000000000000028020000000000000000240200000026020000000000000000000000000028020000002902000000280200000026020000002402000000000000000000000000000000000000
+510c00001431519315203251432519315203151432519325203151431519325203251431519315203251432519315203151432519325203151431519325203251431519315203251432519315203151432518325
+010c00000175001750017500175001750017500175001750017500175001750017500175001750017500175001750017500175001750017500175001750017500175001750017500175001750017500175001750
+010c0000195502c5002a50019555195552a500185502950024500295002050024500145351654518550245001b550245002f5051e5551d5552450019550245002450024500245002450014530165401955026500
+010c00002c05024000240002a05529055240002e050240002400029000270502400024000240002e050240003005024000240002e0552d05524000300502400024000290002905024000270002a0002900028000
+510c0000143151931520325143251931520315163251932516315183151932516325183151931516325183251b3151e315183251b3251e315183151b3251e325183151b3151d325183251b3151d315183251b325
+010c00000175001750017500175001750017500175001750037500375003750037500375003750037500375006750067500675006750067500675006750067500575005750057500575005750057500575005750
+010c00001d55024500245001b55519555245001e550245002450029500165502450024500245001e550245001e55024500245001d5551b555245001d5502450024500295001855024500275002a5002950028500
+010a00000c4200c4200c4200c4200c4200c4200c4200c4200f4200f4200f4200f4200f4200f4200f4200f42010420104201042010420104201042010420104201442014420144201442014420144201442014420
+010a00000532105320053200532005320053200532005320083200832008320083200832008320083200832009320093200932009320093200932009320093200d3200d3200d3200d3200d3200d3200d3200d320
+000a002034615296152b6161e6061c6401d6452b6152760528615296152b6151e6001c6401d6452b6152761534615296152b6161e6061c6401d6452b6152760528615356152b6151e6051c6401d6452b61527615
+050a00200232002320023200232002320023200232002320023200230502325023250232002325023200232503320033200332003320033200332003320033200732007320073200732007320073200732007320
+010a000002320023200232002320023200232002320023200a3200a3200a3200a3200a3200a3200a3200a32005320053200532005320053200532005320053200332003320033200332003320033200332003320
+010a000009220092200922009220092200922009220092200e2200e2200e2200e2200e2200e2200e2200e2200a2200a2200a2200a2200a2200a2200a2200a2200022000220002200022001220012200122001220
+010a000005220052200522005220052200522005220052200e2200e2200e2200e2200e2200e2200e2200e2200a2200a2200a2200a2200a2200a2200a2200a2200022000220002200022001220012200122001220
+010a00000d2200d2200d2200d2200d2200d2200d2200d220052200522005220052200522005220052200522011220112201122011220112201122011220112200322003220032200322003220032200322003220
+150a00001522015220152201522015220152201522015220152201522015220152201322013220152201522016220162201622016220162201622016220162201922019220192201922019220192201922019220
 __music__
-00 08424344
+01 08424344
 02 08094344
+01 070a0b0c
+00 070a0b0c
+02 0d0e0f10
+02 11126844
+01 13141544
+00 13151666
+00 13141765
+00 13171865
+02 13141944
 
