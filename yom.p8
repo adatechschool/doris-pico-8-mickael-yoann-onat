@@ -407,6 +407,7 @@ function gandalf()
 		enemies = {}
 		score += 5
 		p.state = "normal"
+		p.power_sprite = 41
 		p.sprite = 40
 	end
 end
